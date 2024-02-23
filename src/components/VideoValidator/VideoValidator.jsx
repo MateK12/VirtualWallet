@@ -3,7 +3,7 @@
 // expo install expo-sharing
 // expo install expo-av
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import Camerabutton from '../Validations/Camerabutton';
@@ -83,6 +83,7 @@ const VideoValidator = () => {
   }
   return (
     <View style={styles.cameraCont}>
+
       <Camera ref={cameraRef} style={styles.camera}>
         <TouchableOpacity style={styles.btnRecord} >
           <Camerabutton color={IsRecording ? 'red' : 'white'} icon={'camera'} onPress={IsRecording ? stopRecording : recordVideo}></Camerabutton>

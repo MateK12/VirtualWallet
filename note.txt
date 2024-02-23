@@ -1,0 +1,230 @@
+import React, { useEffect, useState, useRef } from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, ScrollView, Pressable } from 'react-native';
+import { Camera, CameraType } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { Entypo } from "@expo/vector-icons";
+import { IDphotostyles } from './IDphotoCSS';
+import * as imagePicker from 'expo-image-picker';
+const logo = require('../../../../assets/Images/RedMagisterLogo.png')
+const NoPhotoTaken = require('../../../../assets/Images/NoPhotoTaken.png');
+
+
+const IDphoto = ({ navigation }) => {
+    const [type, setType] = useState(Camera.Constants.Type.back);
+    const [cameraAccess, setcameraAccess] = useState(null)
+    const [image, setimage] = useState(null);
+    const [flash, setflash] = useState(Camera.Constants.FlashMode.off);
+    const [backImage, setbackImage] = useState(null)
+    const [cameraActive, setcameraActive] = useState(false)
+    const [backCamera, setBackCamera] = useState(false)
+    const cameraRef = useRef(null);
+    const [showImage, setshowImage] = useState(false)
+
+    useEffect(() => {
+        (async () => {
+            MediaLibrary.requestPermissionsAsync();
+            const cameraStatus = await Camera.requestCameraPermissionsAsync();
+            setcameraAccess(cameraStatus.granted == 'granted')
+            if (cameraStatus.granted != 'granted') {
+                return <Text>Porfavor, permite el acceso a la camara</Text>
+            }
+        })();
+    }, [])
+    const TakePhoto = async () => {
+        if (cameraRef) {
+            try {
+                const data = await cameraRef.current.takePictureAsync()
+                console.log(data);
+                setimage(data.uri)
+                setcameraActive(false);
+                setshowImage(true)
+            } catch (error) {
+                console.log('an error ocurred: ' + error);
+            }
+        }
+    }
+    const TakeBackPhoto = async () => {
+        if (cameraRef) {
+            try {
+                const data = await cameraRef.current.takePictureAsync()
+                console.log(data);
+                setbackImage(data.uri);
+                setBackCamera(false)
+            } catch (error) {
+                console.log('an error ocurred: ' + error);
+            }
+        }
+    }
+    const savePhoto = async () => {
+        if (image) {
+            try {
+                await MediaLibrary.createAssetAsync(image);
+                setcameraActive(false)
+
+            } catch (e) {
+                console.log('an error ocurred while saving the photo: ' + e);
+            }
+        }
+    }
+    const saveBackPhoto = async () => {
+        if (backImage) {
+            try {
+                console.log('imagen del dorso');
+                await MediaLibrary.createAssetAsync(backImage);
+                setBackCamera(false)
+
+            } catch (e) {
+                console.log('an error ocurred while saving the photo: ' + e);
+            }
+        }
+    }
+    const OnTakePhoto = () => {
+        setimage(null)
+        setcameraActive(true)
+        console.log(cameraActive);
+    }
+    const OnTakeBackPhoto = () => {
+        setbackImage(null)
+        setBackCamera(true)
+    }
+    const uploadPhoto = async (photoType) => {
+        if (photoType == 1) {
+            let imgPicked = await imagePicker.launchImageLibraryAsync({
+                mediaTypes: imagePicker.MediaTypeOptions.Images,
+                aspect: [1, 1],
+                quality: 1
+            })
+            setimage(imgPicked.assets[0].uri)
+
+            setcameraActive(false)
+        } else {
+
+            let imgPicked = await imagePicker.launchImageLibraryAsync({
+                mediaTypes: imagePicker.MediaTypeOptions.Images,
+                aspect: [1, 1],
+                quality: 1
+            })
+            setbackImage(imgPicked.assets[0].uri)
+            setBackCamera(false)
+
+        }
+
+    }
+
+    return (
+        <View style={cameraActive || backCamera ? { backgroundColor: '#1c1c1c' } : null}>
+            {showImage ? <Image source={{ uri: image }}></Image> : null}
+            {cameraActive ?
+                <View style={{ height: 700, padding: 40 }}>
+                    <Camera
+                        type={type}
+                        flashMode={flash}
+                        ref={cameraRef}
+                        style={{
+                            flex: 1,
+                            borderRadius: 20,
+                            height: '80%',
+                        }}
+                    >
+                    </Camera>
+                    {!image ? (
+                        <View style={IDphotostyles.contBtn}>
+                            <TouchableOpacity style={IDphotostyles.cameraBtn} onPress={() => { uploadPhoto(1) }} >
+                                <Icon color={'#1c1c1c'} name='upload' size={30} />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={IDphotostyles.cameraBtn}>
+                                <Icon color={'#1c1c1c'} size={30} name={'camera'} onPress={TakePhoto}></Icon>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={IDphotostyles.cameraBtn} onPress={() => { setflash(flash === Camera.Constants.FlashMode.on ? Camera.Constants.FlashMode.off : Camera.Constants.FlashMode.on) }}>
+                                <Icon color={'#1c1c1c'} name={flash === Camera.Constants.FlashMode.off ? 'flash' : 'flash-off'} size={30} />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View>
+                            <View style={IDphotostyles.contBtn}>
+                                <Icon name={'retweet'} size={28} color={'white'} onPress={() => setimage(null)}></Icon>
+                                <Icon name={'check'} size={28} color={'white'} onPress={savePhoto}></Icon>
+                            </View>
+                        </View>
+                    )
+
+                    }
+                </View>
+                : null
+            }
+
+            {backCamera ?
+                <View style={{ height: 700, padding: 40 }}>
+                    <Camera
+                        type={type}
+                        flashMode={flash}
+                        ref={cameraRef}
+                        style={{
+                            flex: 1,
+                            borderRadius: 20,
+                            height: '80%',
+                        }}
+                    >
+                    </Camera>
+                    {!backImage ? (
+                        <View style={IDphotostyles.contBtn}>
+                            <TouchableOpacity style={IDphotostyles.cameraBtn} onPress={() => { uploadPhoto(2) }} >
+                                <Icon color={'#1c1c1c'} name='upload' size={30} />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={IDphotostyles.cameraBtn}>
+                                <Icon color={'#1c1c1c'} size={30} name={'camera'} onPress={TakeBackPhoto}></Icon>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={IDphotostyles.cameraBtn} onPress={() => { setflash(flash === Camera.Constants.FlashMode.on ? Camera.Constants.FlashMode.off : Camera.Constants.FlashMode.on) }}>
+                                <Icon color={'#1c1c1c'} name={flash === Camera.Constants.FlashMode.off ? 'flash' : 'flash-off'} size={30} />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={IDphotostyles.contBtn}>
+                            <Icon name={'retweet'} size={28} color={'white'} onPress={() => setbackImage(null)}></Icon>
+                            <Icon name={'check'} size={28} color={'white'} onPress={saveBackPhoto}></Icon>
+                        </View>
+                    )
+
+                    }
+                </View>
+                : null
+            }
+            <ScrollView>
+                <View style={IDphotostyles.MainCont}>
+                    <Image style={IDphotostyles.logo} source={logo}>
+                    </Image>
+                    <View>
+                        <Text style={IDphotostyles.MainText}>¡Validemos tu documento!</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => { OnTakePhoto() }}>
+                        <ImageBackground style={IDphotostyles.NoPhotoTaken} source={image == null ? require('../../../../assets/Images/NoPhotoTaken.png') : { uri: image }}>
+                            <View style={IDphotostyles.rectangle}>
+                            </View>
+                        </ImageBackground>
+                    </TouchableOpacity>
+                    <Text style={IDphotostyles.imgTxt}>Frente</Text>
+                    <TouchableOpacity onPress={() => { OnTakeBackPhoto() }}>
+                        <ImageBackground style={IDphotostyles.NoPhotoTaken} source={image == null ? require('../../../../assets/Images/NoPhotoTaken.png') : { uri: backImage }}>
+                            <View style={IDphotostyles.rectangle}>
+                            </View>
+                        </ImageBackground>
+                    </TouchableOpacity>
+                    <Text style={IDphotostyles.imgTxt}>Dorso</Text>
+                    <View style={{ padding: 36 }}>
+                        <Text style={{ fontSize: 20, fontWeight: '500', color: '#7A7D7F' }}>
+                            Por favor, envíanos fotos claras y legibles del frente y dorso de tu dni.
+                        </Text>
+                    </View>
+
+                    <TouchableOpacity style={IDphotostyles.btnNext} onPress={() => { navigation.navigate('LifeValidation') }}>
+                        <Text style={{ color: 'white', fontWeight: '700', fontSize: 20 }}>Siguiente</Text>
+                    </TouchableOpacity>
+                </View>
+
+            </ScrollView>
+        </View>
+    )
+}
+
+export default IDphoto
