@@ -14,6 +14,7 @@ import GlobalStyles from './src/styles';
 import Login from './src/components/Login/Login';
 import Identification from './src/components/Validations/Identification';
 import VideoValidator from './src/components/VideoValidator/VideoValidator';
+import Biometrics from './src/components/Biometrics/Biometrics';
 export default function App() {
 
   const Stack = createStackNavigator();
@@ -32,7 +33,7 @@ export default function App() {
     <SafeAreaProvider>
 
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='LogIn'
+        <Stack.Navigator initialRouteName='Biometrics'
           screenOptions={{
             title: null,
             headerStyle: {
@@ -55,6 +56,7 @@ export default function App() {
           <Stack.Screen name='LogIn' component={Login}></Stack.Screen>
           <Stack.Screen name='IDvalidation' component={Identification}></Stack.Screen>
           <Stack.Screen name='VideoValidator' component={VideoValidator}></Stack.Screen>
+          <Stack.Screen name='Biometrics' component={Biometrics}></Stack.Screen>
 
 
         </Stack.Navigator>
